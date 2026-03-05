@@ -4,23 +4,25 @@ import (
 	"fmt"
 )
 
-func Workers(work int) chan int {
-	ch := make(chan int)
-	for i := 0; i < work; i++ {
-		go func() {
-			for n := range ch {
-				fmt.Println(n)
-			}
-
-		}()
+func Workers(ch <-chan int) {
+	for n := range ch {
+		fmt.Println(n)
 	}
-	return ch
 }
+
 func main() {
 	var cnt int
 	fmt.Scan(&cnt)
-	ch := Workers(cnt)
+
+	ch := make(chan int)
 	defer close(ch)
+
+	for i := 0; i < cnt; i++ {
+		go func() {
+			Workers(ch)
+		}()
+	}
+
 	i := 0
 	for {
 		ch <- i
